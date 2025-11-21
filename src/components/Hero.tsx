@@ -12,32 +12,39 @@ const Hero = () => {
           alt="Optia Peluquería Salon"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-hero-bg/90 to-hero-bg/70" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-background" />
+      </div>
+
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 z-0 opacity-30">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/20 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
       {/* Content */}
-      <div className="container mx-auto px-4 z-10 text-center">
-        <div className="max-w-4xl mx-auto animate-fade-in">
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">
-            Tu estilo, nuestra pasión
+      <div className="container mx-auto px-4 z-10 text-center relative">
+        <div className="max-w-4xl mx-auto space-y-8">
+          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 animate-slide-up">
+            Tu estilo, nuestra <span className="text-gradient">pasión</span>
           </h1>
-          <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto animate-fade-in animation-delay-200">
             Peluquería moderna con atención profesional. Descubre el arte de realzar tu belleza
             con los mejores especialistas en cuidado capilar.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in animation-delay-400">
             <Button
               asChild
               size="lg"
-              className="bg-primary hover:bg-primary-hover text-white text-lg px-8 py-6"
+              variant="premium"
+              className="text-lg px-8 py-6 shadow-glow hover-lift"
             >
               <Link to="/reservar">Reservar Cita</Link>
             </Button>
             <Button
               asChild
               size="lg"
-              variant="outline"
-              className="text-white border-white hover:bg-white hover:text-foreground text-lg px-8 py-6"
+              variant="glass"
+              className="text-lg px-8 py-6 hover-lift"
             >
               <a href="#servicios">Ver Servicios</a>
             </Button>

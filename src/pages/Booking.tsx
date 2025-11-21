@@ -52,6 +52,31 @@ const Booking = () => {
     }
   }, [selectedDate]);
 
+  // Realtime subscription to update available times when bookings change
+  useEffect(() => {
+    if (!selectedDate) return;
+
+    const channel = supabase
+      .channel('bookings-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'bookings'
+        },
+        () => {
+          // Refetch booked times when any booking changes
+          fetchBookedTimes(selectedDate);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [selectedDate]);
+
   const fetchBookedTimes = async (date: Date) => {
     const formattedDate = format(date, "yyyy-MM-dd");
     const { data, error } = await supabase
