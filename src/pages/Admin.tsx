@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clock, User, Phone } from "lucide-react";
+import { Calendar, Clock, User, Phone, Scissors } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import Header from "@/components/Header";
@@ -12,6 +12,7 @@ interface Booking {
   nombre: string;
   apellidos: string;
   telefono: string;
+  servicio: string;
   fecha: string;
   hora: string;
   created_at: string;
@@ -117,14 +118,20 @@ const Admin = () => {
                             </div>
                           </CardHeader>
                           <CardContent>
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                              <Phone className="h-4 w-4" />
-                              <a
-                                href={`tel:${booking.telefono}`}
-                                className="hover:text-primary transition-colors"
-                              >
-                                {booking.telefono}
-                              </a>
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <Scissors className="h-4 w-4" />
+                                <span>{booking.servicio}</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <Phone className="h-4 w-4" />
+                                <a
+                                  href={`tel:${booking.telefono}`}
+                                  className="hover:text-primary transition-colors"
+                                >
+                                  {booking.telefono}
+                                </a>
+                              </div>
                             </div>
                           </CardContent>
                         </Card>

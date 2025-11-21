@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -28,6 +29,7 @@ const Booking = () => {
     nombre: "",
     apellidos: "",
     telefono: "",
+    servicio: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -103,7 +105,7 @@ const Booking = () => {
       return;
     }
 
-    if (!formData.nombre || !formData.apellidos || !formData.telefono) {
+    if (!formData.nombre || !formData.apellidos || !formData.telefono || !formData.servicio) {
       toast.error("Por favor completa todos los campos");
       return;
     }
@@ -115,6 +117,7 @@ const Booking = () => {
         nombre: formData.nombre,
         apellidos: formData.apellidos,
         telefono: formData.telefono,
+        servicio: formData.servicio,
         fecha: format(selectedDate, "yyyy-MM-dd"),
         hora: selectedTime,
       },
@@ -235,6 +238,28 @@ const Booking = () => {
                     </CardHeader>
                     <CardContent>
                       <form onSubmit={handleSubmit} className="space-y-4">
+                        <div>
+                          <Label htmlFor="servicio">Servicio</Label>
+                          <Select
+                            value={formData.servicio}
+                            onValueChange={(value) =>
+                              setFormData({ ...formData, servicio: value })
+                            }
+                            required
+                          >
+                            <SelectTrigger id="servicio">
+                              <SelectValue placeholder="Selecciona un servicio" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Corte de pelo">Corte de pelo</SelectItem>
+                              <SelectItem value="Coloración">Coloración</SelectItem>
+                              <SelectItem value="Tratamiento capilar">Tratamiento capilar</SelectItem>
+                              <SelectItem value="Peinado">Peinado</SelectItem>
+                              <SelectItem value="Barba y afeitado">Barba y afeitado</SelectItem>
+                              <SelectItem value="Manicura y pedicura">Manicura y pedicura</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                         <div>
                           <Label htmlFor="nombre">Nombre</Label>
                           <Input
