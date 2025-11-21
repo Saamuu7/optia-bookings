@@ -11,7 +11,7 @@ const Header = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      setIsScrolled(window.scrollY > 50);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -38,14 +38,16 @@ const Header = () => {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? "bg-background/95 backdrop-blur-md shadow-md" : "bg-transparent"
+        isScrolled 
+          ? "bg-background/95 backdrop-blur-md border-b border-border shadow-lg" 
+          : "bg-gradient-to-b from-black/50 to-transparent"
       }`}
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center">
-            <img src={logo} alt="Optia Peluquería" className="h-12 w-auto" />
+          <Link to="/" className="flex items-center transition-transform hover:scale-105 duration-300">
+            <img src={logo} alt="Optia Peluquería" className="h-12 w-auto drop-shadow-lg" />
           </Link>
 
           {/* Desktop Navigation */}
@@ -55,19 +57,26 @@ const Header = () => {
                 key={link.name}
                 href={link.href}
                 onClick={(e) => scrollToSection(e, link.href)}
-                className="text-foreground hover:text-primary transition-colors font-medium"
+                className={`font-medium transition-all duration-300 relative group ${
+                  isScrolled 
+                    ? "text-foreground hover:text-primary" 
+                    : "text-white/90 hover:text-white"
+                }`}
               >
                 {link.name}
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
               </a>
             ))}
-            <Button asChild size="lg" className="bg-primary hover:bg-primary-hover">
+            <Button asChild size="lg" variant="premium" className="shadow-glow">
               <Link to="/reservar">Reservar Cita</Link>
             </Button>
           </nav>
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden text-foreground"
+            className={`md:hidden transition-colors duration-300 ${
+              isScrolled ? "text-foreground" : "text-white"
+            }`}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -77,7 +86,7 @@ const Header = () => {
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <nav className="md:hidden py-4 bg-background border-t border-border">
+          <nav className="md:hidden py-4 bg-background border-t border-border animate-fade-in">
             <div className="flex flex-col gap-4">
               {navLinks.map((link) => (
                 <a
@@ -89,7 +98,7 @@ const Header = () => {
                   {link.name}
                 </a>
               ))}
-              <Button asChild size="lg" className="bg-primary hover:bg-primary-hover">
+              <Button asChild size="lg" variant="premium">
                 <Link to="/reservar" onClick={() => setIsMobileMenuOpen(false)}>
                   Reservar Cita
                 </Link>
