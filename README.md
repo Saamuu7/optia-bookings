@@ -1,113 +1,92 @@
-# ERYCK_STYLE — Sitio web (preparado para producción)
+💈 ERYCK_STYLE — Sitio Web para Peluquería
 
-Este repositorio contiene la versión del proyecto lista para personalizar y publicar.
+Este repositorio contiene ERYCK_STYLE, un sitio web profesional desarrollado para representar la imagen y los servicios de una peluquería. El proyecto está completamente finalizado y listo para ser entregado, instalado o desplegado en el hosting del cliente.
 
-## Project info
 
-**URL**: https://lovable.dev/projects/1ec01f4c-b34b-4603-9b7e-943610f8a74d
 
-## How can I edit this code?
+🧾 Descripción del proyecto
 
-There are several ways of editing your application.
+El sitio web está diseñado para ofrecer una experiencia clara y moderna, mostrando la información esencial del negocio.
+Incluye:
 
-**Use Lovable**
+Página principal con presentación del local
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/1ec01f4c-b34b-4603-9b7e-943610f8a74d) and start prompting.
+Sección de servicios disponibles
 
-Changes made via Lovable will be committed automatically to this repo.
+Galería o apartado visual
 
-**Use your preferred IDE**
+Información general: horarios, ubicación y contacto
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Diseño responsive adaptado a móviles, tablets y ordenadores
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+El objetivo del proyecto es proporcionar una página profesional, rápida y visualmente atractiva adecuada para un establecimiento de peluquería.
 
-Follow these steps:
+🛠 Tecnologías utilizadas
+
+El desarrollo del sitio se ha realizado con:
+
+React
+
+TypeScript
+
+Vite
+
+Tailwind CSS
+
+shadcn/ui (componentes de interfaz)
+
+Estas tecnologías garantizan un rendimiento óptimo, facilidad de mantenimiento y una interfaz moderna.
+
+
+
+🚀 Ejecución en local
+
+Para revisar, modificar o mantener el proyecto:
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Clonar el repositorio
+git clone <URL_DEL_REPO>
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Acceder al directorio
+cd ERYCK_STYLE
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Instalar dependencias
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Ejecutar en modo desarrollo
 npm run dev
 ```
+Esto abrirá la web en el navegador con recarga automática al editar.
 
-**Edit a file directly in GitHub**
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+🏭 Build de producción
 
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/1ec01f4c-b34b-4603-9b7e-943610f8a74d) and click on Share -> Publish.
-
----
-
-## Despliegue y publicación (Guía rápida en español)
-
-Resumen: este proyecto genera una app estática (carpeta `dist/`) usando `vite build`. Puedes publicar esos archivos en un hosting estático (Netlify, Vercel, un VPS, cPanel, etc.) y apuntar tu dominio al servidor.
-
-1) Preparar variables de entorno
-- Copia `.env.example` a `.env` para desarrollo local.
-- Cuando publiques en un host, crea las mismas variables en el panel del host (IMPORTANTE: Vite expone al cliente sólo variables que empiecen por `VITE_`).
-- Variables necesarias (cliente): `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`.
-
-2) Build de producción
-```powershell
+Para generar la versión final que se subirá al hosting del cliente:
+```sh
 npm run build
 ```
-Esto generará la carpeta `dist/` con los archivos que debes subir al servidor.
+Se generará la carpeta dist/ con todos los archivos optimizados.
 
-3) Previsualizar la build localmente
-```powershell
-npm run preview
-```
 
-4) Hosts recomendados y pasos rápidos
-- Vercel: conecta el repo, añade variables `VITE_...` en Settings, build command `npm run build`, publish dir `dist`.
-- Netlify: conecta el repo o sube `dist/`, añade variables en Site Settings, build `npm run build`, publish `dist`.
-- Host tradicional (VPS/cPanel): sube `dist/` al `public_html`. Asegura un fallback a `index.html` para rutas SPA (ej. reglas de rewrite en Apache o nginx).
 
-5) Dominios y SSL
-- En el proveedor de DNS del dominio crea el registro A/CNAME según indica tu host. Muchos hosts configuran SSL automáticamente (Let’s Encrypt) al conectar el dominio.
+🌐 Despliegue
 
-6) Seguridad y claves
-- No pongas claves secretas en variables `VITE_` (son visibles en el navegador). Para operaciones sensibles usa funciones server-side o un backend que mantenga las claves privadas.
+Los archivos de la carpeta dist pueden instalarse en:
 
-7) Compartir localmente vs publicar públicamente
-- La URL "network" que Vite muestra durante `dev` permite acceso desde otros dispositivos en tu red local (LAN). No es público en Internet salvo que abras puertos o uses túnel (ngrok).
+Servidores como Vercel o Netlify
 
----
+cPanel u otros hostings tradicionales
 
-## Can I connect a custom domain to my Lovable project?
+Servidores privados (VPS)
 
-Yes, you can!
+Cualquier plataforma compatible con sitios estáticos
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+El sitio no requiere backend para su funcionamiento.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+
+📌 Estado del proyecto
+
+El proyecto ERYCK_STYLE está finalizado, estable y listo para ser entregado o desplegado.
+Puede ampliarse en cualquier momento con nuevas secciones, páginas o funcionalidades según las necesidades del cliente.
+
