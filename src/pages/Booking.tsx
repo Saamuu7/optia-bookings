@@ -31,8 +31,7 @@ const Booking = () => {
   const [availableTimes, setAvailableTimes] = useState<string[]>([]);
   const [bookedTimes, setBookedTimes] = useState<string[]>([]);
   const [formData, setFormData] = useState({
-    nombre: "",
-    apellidos: "",
+    nombreCompleto: "",
     telefono: "",
     servicio: "",
   });
@@ -110,17 +109,23 @@ const Booking = () => {
       return;
     }
 
-    if (!formData.nombre || !formData.apellidos || !formData.telefono || !formData.servicio) {
+    // Validate using the unified nombreCompleto field
+    if (!formData.nombreCompleto || !formData.telefono || !formData.servicio) {
       toast.error("Por favor completa todos los campos");
       return;
     }
 
     setIsSubmitting(true);
 
+    // Split full name into first name and last name(s)
+    const parts = formData.nombreCompleto.trim().split(/\s+/);
+    const nombre = parts.shift() || "";
+    const apellidos = parts.join(" ");
+
     const { error } = await supabase.from("bookings").insert([
       {
-        nombre: formData.nombre,
-        apellidos: formData.apellidos,
+        nombre,
+        apellidos,
         telefono: formData.telefono,
         servicio: formData.servicio,
         fecha: format(selectedDate, "yyyy-MM-dd"),
@@ -250,6 +255,25 @@ const Booking = () => {
                     </CardHeader>
                     <CardContent>
                       <form onSubmit={handleSubmit} className="space-y-4">
+                        {/* Summary: selected date/time */}
+                        <div>
+                          <Card className="border">
+                            <CardContent>
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="text-sm text-muted-foreground">Fecha</p>
+                                  <p className="font-medium">{format(selectedDate!, "EEEE, d 'de' MMMM", { locale: es })}</p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-muted-foreground">Hora</p>
+                                  <p className="font-medium">{selectedTime}</p>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+
+                        {/* Service selector and summary */}
                         <div>
                           <Label htmlFor="servicio">Servicio</Label>
                           <Select
@@ -270,29 +294,42 @@ const Booking = () => {
                                 ))}
                             </SelectContent>
                           </Select>
+
+                          {/* If a service is selected, show a compact summary */}
+                          {formData.servicio && (
+                            (() => {
+                              const svc = SERVICES.find((x) => x.title === formData.servicio);
+                              if (!svc) return null;
+                              return (
+                                <div className="mt-3 p-3 rounded-md border bg-card">
+                                  <div className="flex items-start gap-4">
+                                    <div className="flex-1">
+                                      <p className="font-semibold">{svc.title}</p>
+                                      {svc.description && <p className="text-sm text-muted-foreground">{svc.description}</p>}
+                                    </div>
+                                    <div className="text-right">
+                                      {svc.duration && <p className="text-sm text-muted-foreground">{svc.duration}</p>}
+                                      {svc.price && <p className="font-medium">{svc.price}</p>}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })()
+                          )}
                         </div>
+
                         <div>
-                          <Label htmlFor="nombre">Nombre</Label>
+                          <Label htmlFor="nombreCompleto">Nombre completo</Label>
                           <Input
-                            id="nombre"
-                            value={formData.nombre}
+                            id="nombreCompleto"
+                            value={formData.nombreCompleto}
                             onChange={(e) =>
-                              setFormData({ ...formData, nombre: e.target.value })
+                              setFormData({ ...formData, nombreCompleto: e.target.value })
                             }
                             required
                           />
                         </div>
-                        <div>
-                          <Label htmlFor="apellidos">Apellidos</Label>
-                          <Input
-                            id="apellidos"
-                            value={formData.apellidos}
-                            onChange={(e) =>
-                              setFormData({ ...formData, apellidos: e.target.value })
-                            }
-                            required
-                          />
-                        </div>
+
                         <div>
                           <Label htmlFor="telefono">Teléfono</Label>
                           <Input
@@ -305,6 +342,7 @@ const Booking = () => {
                             required
                           />
                         </div>
+
                         <Button
                           type="submit"
                           className="w-full"
