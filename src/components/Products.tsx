@@ -1,37 +1,49 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import productsHero from "@/assets/products-hero.jpg";
 
-// Lista de productos de ejemplo. Actualiza/desactiva según inventario real.
+// Lista de productos de ejemplo. Actualiza según inventario real.
 const products = [
   {
+    id: "champu-hidratante",
     name: "Champú Hidratante Premium",
     description: "Fórmula profesional para cabello seco y dañado. Restaura la hidratación natural.",
-    category: "Champú",
+    size: "250 ml",
+    price: "18€",
   },
   {
+    id: "acondicionador-reparador",
     name: "Acondicionador Reparador",
     description: "Tratamiento intensivo que desenreda y repara el cabello desde la raíz.",
-    category: "Acondicionador",
+    size: "200 ml",
+    price: "20€",
   },
   {
+    id: "mascarilla-nutritiva",
     name: "Mascarilla Nutritiva",
     description: "Mascarilla intensiva con aceites naturales para nutrición profunda.",
-    category: "Tratamiento",
+    size: "250 ml",
+    price: "28€",
   },
   {
+    id: "serum-brillo",
     name: "Sérum Brillo Diamante",
     description: "Sérum ligero que proporciona brillo excepcional sin dejar residuos.",
-    category: "Sérum",
+    size: "50 ml",
+    price: "22€",
   },
   {
+    id: "aceite-argan",
     name: "Aceite de Argán Puro",
     description: "100% natural, ideal para todo tipo de cabello. Nutre y protege.",
-    category: "Aceite",
+    size: "100 ml",
+    price: "24€",
   },
   {
+    id: "protector-termico",
     name: "Protector Térmico",
     description: "Protección profesional contra el calor de planchas y secadores.",
-    category: "Protección",
+    size: "150 ml",
+    price: "16€",
   },
 ];
 
@@ -58,21 +70,29 @@ const Products = () => {
           />
         </div>
 
-        {/* Products Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.map((product, index) => (
-            <Card
-              key={index}
-              className="hover:shadow-lg transition-all duration-300 border-border bg-card"
-            >
-              <CardHeader>
-                <div className="text-sm font-semibold text-primary mb-2">{product.category}</div>
-                <CardTitle className="text-xl">{product.name}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-base">{product.description}</CardDescription>
-              </CardContent>
-            </Card>
+        {/* Products Grid: image on top, content below */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {products.map((p) => (
+            <article key={p.id} className="bg-card border border-border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+              <div className="relative h-44 bg-gray-100">
+                <img src={productsHero} alt={p.name} className="w-full h-full object-cover" />
+              </div>
+              <div className="p-4 md:p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-foreground">{p.name}</h3>
+                    <p className="mt-2 text-sm text-muted-foreground">{p.description}</p>
+                  </div>
+
+                  <div className="flex-shrink-0 text-right ml-4">
+                    <div className="text-sm text-muted-foreground">&nbsp;</div>
+                    <div className="mt-2 text-lg font-semibold text-primary">{p.price}</div>
+                    {/* Size moved below price as a small muted label */}
+                    {p.size && <div className="text-xs text-muted-foreground mt-1">{p.size}</div>}
+                  </div>
+                </div>
+              </div>
+            </article>
           ))}
         </div>
 

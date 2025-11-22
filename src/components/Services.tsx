@@ -1,41 +1,5 @@
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Scissors, Palette, Sparkles, Wind, User, Droplets } from "lucide-react";
-import { Link } from "react-router-dom";
-
-// Lista de servicios ofrecidos. Personaliza títulos y descripciones según la oferta real.
-const services = [
-  {
-    icon: Scissors,
-    title: "Cortes de Cabello",
-    description: "Cortes modernos y clásicos adaptados a tu estilo personal y tipo de rostro.",
-  },
-  {
-    icon: Palette,
-    title: "Coloración",
-    description: "Tintes profesionales, mechas, balayage y técnicas de color innovadoras.",
-  },
-  {
-    icon: Sparkles,
-    title: "Peinados y Recogidos",
-    description: "Peinados para eventos especiales, bodas y ocasiones importantes.",
-  },
-  {
-    icon: Wind,
-    title: "Tratamientos Capilares",
-    description: "Tratamientos de hidratación, botox capilar y reparación profunda.",
-  },
-  {
-    icon: User,
-    title: "Barba y Afeitado",
-    description: "Servicio profesional de barbería, perfilado y afeitado tradicional.",
-  },
-  {
-    icon: Droplets,
-    title: "Alisados y Permanentes",
-    description: "Alisado brasileño, keratina y permanentes para transformar tu look.",
-  },
-];
+import { SERVICES } from "@/lib/services";
 
 const Services = () => {
   return (
@@ -53,28 +17,31 @@ const Services = () => {
 
         {/* Services Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {services.map((service, index) => {
+          {SERVICES.map((service, index) => {
             const Icon = service.icon;
             return (
               <Card
                 key={index}
-                className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-border bg-card"
+                className="group transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border border-border bg-card rounded-xl overflow-hidden"
               >
-                <CardHeader>
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                    <Icon className="w-7 h-7 text-white" />
-                  </div>
-                  <CardTitle className="text-xl">{service.title}</CardTitle>
-                </CardHeader>
                 <CardContent>
-                  <CardDescription className="text-base">{service.description}</CardDescription>
-                  <Button
-                    asChild
-                    variant="link"
-                    className="mt-4 text-primary hover:text-primary-hover p-0"
-                  >
-                    <Link to="/reservar">Reservar ahora →</Link>
-                  </Button>
+                  <div className="flex items-start gap-4 p-5">
+                    <div className="flex-shrink-0">
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white ring-1 ring-border">
+                        <Icon className="w-6 h-6" />
+                      </div>
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-lg font-semibold text-foreground truncate">{service.title}</h3>
+                      <p className="text-sm text-muted-foreground mt-2">{service.description}</p>
+
+                      <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+                        <span>Duración: <strong className="text-foreground">{service.duration || '—'}</strong></span>
+                        <span>Precio: <strong className="text-foreground">{service.price || '—'}</strong></span>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             );

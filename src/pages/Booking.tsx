@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { ArrowLeft, Clock, Calendar as CalendarIcon } from "lucide-react";
+import { SERVICES } from "@/lib/services";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -192,6 +193,10 @@ const Booking = () => {
                     disabled={isDateDisabled}
                     locale={es}
                     className="rounded-md border pointer-events-auto"
+                    classNames={{
+                      day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-[hsl(var(--primary-hover))] hover:text-primary-foreground",
+                      day_today: "bg-primary/10 text-primary",
+                    }}
                   />
                 </CardContent>
               </Card>
@@ -211,17 +216,20 @@ const Booking = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
-                        {availableTimes.map((time) => (
-                          <Button
-                            key={time}
-                            type="button"
-                            variant={selectedTime === time ? "default" : "outline"}
-                            onClick={() => setSelectedTime(time)}
-                            className="w-full"
-                          >
-                            {time}
-                          </Button>
-                        ))}
+                        {availableTimes.map((time) => {
+                          const isSelected = selectedTime === time;
+                          return (
+                            <Button
+                              key={time}
+                              type="button"
+                              variant={isSelected ? "default" : "outline"}
+                              onClick={() => setSelectedTime(time)}
+                              className={`w-full transition-colors ${isSelected ? 'bg-primary text-primary-foreground' : 'hover:bg-[hsl(var(--primary-hover))] hover:text-primary-foreground'}`}
+                            >
+                              {time}
+                            </Button>
+                          );
+                        })}
                         {availableTimes.length === 0 && (
                           <p className="col-span-3 text-center text-muted-foreground py-4">
                             No hay horas disponibles para este día
@@ -255,12 +263,11 @@ const Booking = () => {
                               <SelectValue placeholder="Selecciona un servicio" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="Corte de pelo">Corte de pelo</SelectItem>
-                              <SelectItem value="Coloración">Coloración</SelectItem>
-                              <SelectItem value="Tratamiento capilar">Tratamiento capilar</SelectItem>
-                              <SelectItem value="Peinado">Peinado</SelectItem>
-                              <SelectItem value="Barba y afeitado">Barba y afeitado</SelectItem>
-                              <SelectItem value="Manicura y pedicura">Manicura y pedicura</SelectItem>
+                                {SERVICES.map((s) => (
+                                  <SelectItem key={s.id} value={s.title}>
+                                    {s.title}{s.price ? ` — ${s.price}` : ""}
+                                  </SelectItem>
+                                ))}
                             </SelectContent>
                           </Select>
                         </div>
