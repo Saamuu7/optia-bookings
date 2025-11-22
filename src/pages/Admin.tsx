@@ -18,7 +18,6 @@ interface Booking {
   servicio: string;
   fecha: string;
   hora: string;
-  created_at: string;
 }
 
 const Admin = () => {

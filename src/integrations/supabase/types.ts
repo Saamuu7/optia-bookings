@@ -17,7 +17,6 @@ export type Database = {
       bookings: {
         Row: {
           apellidos: string
-          created_at: string
           fecha: string
           hora: string
           id: string
@@ -27,7 +26,6 @@ export type Database = {
         }
         Insert: {
           apellidos: string
-          created_at?: string
           fecha: string
           hora: string
           id?: string
@@ -37,7 +35,6 @@ export type Database = {
         }
         Update: {
           apellidos?: string
-          created_at?: string
           fecha?: string
           hora?: string
           id?: string

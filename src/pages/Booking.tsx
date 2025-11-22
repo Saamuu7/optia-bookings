@@ -146,7 +146,7 @@ const Booking = () => {
     }
 
     toast.success("¡Cita reservada exitosamente!");
-    setTimeout(() => navigate("/"), 2000);
+    setTimeout(() => navigate("/"), 1500);
   };
 
   const isDateDisabled = (date: Date) => {
@@ -155,22 +155,22 @@ const Booking = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       <Header />
       <main className="pt-32 pb-20">
         <div className="container mx-auto px-4">
           <Button
             variant="ghost"
             onClick={() => navigate("/")}
-            className="mb-6"
+            className="mb-6 hover-scale group"
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
             Volver al inicio
           </Button>
 
           <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-12">
-              <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+            <div className="text-center mb-12 animate-fade-in">
+              <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">
                 Reservar Cita
               </h1>
               <p className="text-lg text-muted-foreground">
@@ -180,9 +180,9 @@ const Booking = () => {
 
             <div className="grid md:grid-cols-2 gap-8">
               {/* Calendar */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+              <Card className="border-primary/20 shadow-lg hover:shadow-xl transition-shadow duration-300 animate-fade-in">
+                <CardHeader className="bg-gradient-to-br from-primary/5 to-transparent">
+                  <CardTitle className="flex items-center gap-2 text-primary">
                     <CalendarIcon className="h-5 w-5" />
                     Selecciona una fecha
                   </CardTitle>
@@ -190,7 +190,7 @@ const Booking = () => {
                     Cerrado los domingos. Sábados hasta las 15:00
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="flex justify-center">
+                <CardContent className="flex justify-center pt-6">
                   <Calendar
                     mode="single"
                     selected={selectedDate}
@@ -199,8 +199,9 @@ const Booking = () => {
                     locale={es}
                     className="rounded-md border pointer-events-auto"
                     classNames={{
-                      day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-[hsl(var(--primary-hover))] hover:text-primary-foreground",
-                      day_today: "bg-primary/10 text-primary",
+                      day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-primary hover:text-primary-foreground transition-colors",
+                      day_today: "bg-primary/20 text-primary font-bold",
+                      day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
                     }}
                   />
                 </CardContent>
@@ -209,18 +210,18 @@ const Booking = () => {
               {/* Time Selection & Form */}
               <div className="space-y-6">
                 {selectedDate && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
+                  <Card className="border-primary/20 shadow-lg hover:shadow-xl transition-all duration-300 animate-scale-in">
+                    <CardHeader className="bg-gradient-to-br from-accent/5 to-transparent">
+                      <CardTitle className="flex items-center gap-2 text-accent">
                         <Clock className="h-5 w-5" />
                         Horas disponibles
                       </CardTitle>
-                      <CardDescription>
+                      <CardDescription className="font-medium">
                         {format(selectedDate, "EEEE, d 'de' MMMM", { locale: es })}
                       </CardDescription>
                     </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+                    <CardContent className="pt-6">
+                      <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
                         {availableTimes.map((time) => {
                           const isSelected = selectedTime === time;
                           return (
@@ -229,14 +230,18 @@ const Booking = () => {
                               type="button"
                               variant={isSelected ? "default" : "outline"}
                               onClick={() => setSelectedTime(time)}
-                              className={`w-full transition-colors ${isSelected ? 'bg-primary text-primary-foreground' : 'hover:bg-[hsl(var(--primary-hover))] hover:text-primary-foreground'}`}
+                              className={`w-full transition-all duration-200 hover-scale ${
+                                isSelected 
+                                  ? 'bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-md' 
+                                  : 'hover:bg-primary/10 hover:border-primary'
+                              }`}
                             >
                               {time}
                             </Button>
                           );
                         })}
                         {availableTimes.length === 0 && (
-                          <p className="col-span-3 text-center text-muted-foreground py-4">
+                          <p className="col-span-3 text-center text-muted-foreground py-8">
                             No hay horas disponibles para este día
                           </p>
                         )}
@@ -246,27 +251,27 @@ const Booking = () => {
                 )}
 
                 {selectedDate && selectedTime && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Tus datos</CardTitle>
+                  <Card className="border-primary/20 shadow-lg hover:shadow-xl transition-all duration-300 animate-scale-in">
+                    <CardHeader className="bg-gradient-to-br from-primary/5 via-accent/5 to-transparent">
+                      <CardTitle className="text-primary">Tus datos</CardTitle>
                       <CardDescription>
                         Completa tus datos para confirmar la reserva
                       </CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="pt-6">
                       <form onSubmit={handleSubmit} className="space-y-4">
                         {/* Summary: selected date/time */}
-                        <div>
-                          <Card className="border">
-                            <CardContent>
+                        <div className="animate-fade-in">
+                          <Card className="border-primary/30 bg-gradient-to-br from-primary/10 via-accent/5 to-transparent">
+                            <CardContent className="pt-4">
                               <div className="flex items-center justify-between">
                                 <div>
-                                  <p className="text-sm text-muted-foreground">Fecha</p>
-                                  <p className="font-medium">{format(selectedDate!, "EEEE, d 'de' MMMM", { locale: es })}</p>
+                                  <p className="text-sm text-muted-foreground mb-1">Fecha</p>
+                                  <p className="font-semibold text-foreground">{format(selectedDate!, "EEEE, d 'de' MMMM", { locale: es })}</p>
                                 </div>
-                                <div>
-                                  <p className="text-sm text-muted-foreground">Hora</p>
-                                  <p className="font-medium">{selectedTime}</p>
+                                <div className="text-right">
+                                  <p className="text-sm text-muted-foreground mb-1">Hora</p>
+                                  <p className="font-semibold text-primary text-lg">{selectedTime}</p>
                                 </div>
                               </div>
                             </CardContent>
@@ -301,15 +306,15 @@ const Booking = () => {
                               const svc = SERVICES.find((x) => x.title === formData.servicio);
                               if (!svc) return null;
                               return (
-                                <div className="mt-3 p-3 rounded-md border bg-card">
+                                <div className="mt-3 p-4 rounded-lg border border-primary/30 bg-gradient-to-br from-primary/5 to-accent/5 animate-fade-in">
                                   <div className="flex items-start gap-4">
                                     <div className="flex-1">
-                                      <p className="font-semibold">{svc.title}</p>
-                                      {svc.description && <p className="text-sm text-muted-foreground">{svc.description}</p>}
+                                      <p className="font-semibold text-primary">{svc.title}</p>
+                                      {svc.description && <p className="text-sm text-muted-foreground mt-1">{svc.description}</p>}
                                     </div>
                                     <div className="text-right">
                                       {svc.duration && <p className="text-sm text-muted-foreground">{svc.duration}</p>}
-                                      {svc.price && <p className="font-medium">{svc.price}</p>}
+                                      {svc.price && <p className="font-semibold text-accent text-lg">{svc.price}</p>}
                                     </div>
                                   </div>
                                 </div>
@@ -345,7 +350,7 @@ const Booking = () => {
 
                         <Button
                           type="submit"
-                          className="w-full"
+                          className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 hover-scale font-semibold text-lg py-6"
                           disabled={isSubmitting}
                         >
                           {isSubmitting ? "Reservando..." : "Confirmar Reserva"}
@@ -356,10 +361,10 @@ const Booking = () => {
                 )}
 
                 {!selectedDate && (
-                  <Card className="border-dashed">
+                  <Card className="border-dashed border-primary/30 animate-fade-in">
                     <CardContent className="pt-6">
-                      <p className="text-center text-muted-foreground">
-                        Selecciona una fecha para ver las horas disponibles
+                      <p className="text-center text-muted-foreground py-8">
+                        👈 Selecciona una fecha para ver las horas disponibles
                       </p>
                     </CardContent>
                   </Card>
