@@ -1,3 +1,7 @@
+// Página de reserva de citas.
+// - Usa Supabase cliente (ver `src/integrations/supabase/client.ts`) para leer/escribir reservas.
+// - Variables necesarias (cliente) en `.env`: `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`.
+// - No expongas claves privadas en `VITE_`.
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calendar } from "@/components/ui/calendar";

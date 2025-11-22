@@ -12,9 +12,9 @@ const Footer = () => {
         <div className="grid md:grid-cols-4 gap-8">
           {/* Brand */}
           <div>
-            <img src={logo} alt="Optia" className="h-12 mb-4 brightness-0 invert" />
+            <img src={logo} alt="ERYCK_STYLE" className="h-12 mb-4 brightness-0 invert" />
             <p className="text-background/80 text-sm">
-              Tu estilo, nuestra pasión. Peluquería profesional en el corazón de Madrid.
+              ERYCK_STYLE — Salón profesional. Tu estilo, nuestra pasión.
             </p>
           </div>
 
@@ -103,7 +103,7 @@ const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-background/20 text-center text-sm text-background/60">
-          <p>© {currentYear} Optia Peluquería. Todos los derechos reservados.</p>
+          <p>© {currentYear} ERYCK_STYLE. Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>

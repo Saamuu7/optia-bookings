@@ -1,3 +1,6 @@
+// Sección de contacto
+// - Actualiza la dirección, teléfono y enlaces a redes sociales antes de publicar.
+// - El mapa está embebido con Google Maps: reemplaza el `src` por la ubicación real del negocio.
 import { MapPin, Clock, Phone, Instagram, Facebook } from "lucide-react";
 import { FaTiktok } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
@@ -128,7 +131,7 @@ const Contact = () => {
               allowFullScreen
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              title="Ubicación de Optia Peluquería"
+              title="Ubicación de ERYCK_STYLE"
             />
           </div>
         </div>

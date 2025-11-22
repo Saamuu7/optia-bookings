@@ -1,3 +1,6 @@
+// Sección hero principal (portada)
+// - Texto promocional visible al cargar la web.
+// - Personaliza el `heroImage` y los textos para el cliente final.
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-salon.jpg";
@@ -7,9 +10,9 @@ const Hero = () => {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        <img
+          <img
           src={heroImage}
-          alt="Optia Peluquería Salon"
+          alt="ERYCK_STYLE Salon"
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-background" />
@@ -25,11 +28,11 @@ const Hero = () => {
       <div className="container mx-auto px-4 z-10 text-center relative">
         <div className="max-w-4xl mx-auto space-y-8">
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 animate-slide-up">
-            Tu estilo, nuestra <span className="text-gradient">pasión</span>
+            Tu estilo, ERYCK_STYLE <span className="text-gradient">pasión</span>
           </h1>
           <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto animate-fade-in animation-delay-200">
-            Peluquería moderna con atención profesional. Descubre el arte de realzar tu belleza
-            con los mejores especialistas en cuidado capilar.
+            Salón profesional con atención experta. Descubre cómo realzar tu belleza con
+            especialistas en cuidado capilar.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in animation-delay-400">
             <Button

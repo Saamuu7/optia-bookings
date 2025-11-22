@@ -1,3 +1,6 @@
+// Sección "Quiénes Somos" (About)
+// Contiene información descriptiva del salón y estadísticas.
+// Cambia los textos y la imagen en `assets/` según sea necesario para tu cliente.
 import aboutImage from "@/assets/about-salon.jpg";
 
 const About = () => {
@@ -24,7 +27,7 @@ const About = () => {
             </h2>
             <div className="space-y-4 text-muted-foreground text-lg">
               <p>
-                En <span className="text-primary font-semibold">Optia Peluquería</span>, somos más
+                En <span className="text-primary font-semibold">ERYCK_STYLE</span>, somos más
                 que un salón de belleza. Somos un equipo apasionado de profesionales dedicados a
                 realzar tu estilo único y personalidad.
               </p>

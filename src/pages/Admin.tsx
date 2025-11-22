@@ -1,3 +1,6 @@
+// Panel administrativo (solo UI) para ver las reservas almacenadas en Supabase.
+// No incluye autenticación; si vas a publicar este panel en producción, protege
+// esta ruta con autenticación server-side o mediante funciones protegidas.
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";

@@ -1,3 +1,6 @@
+// Galería de trabajos (carrusel)
+// - Reemplaza `assets/` con las imágenes reales del cliente.
+// - Carousel automático y navegación manual.
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";

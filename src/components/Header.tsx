@@ -47,7 +47,7 @@ const Header = () => {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center transition-transform hover:scale-105 duration-300">
-            <img src={logo} alt="Optia Peluquería" className="h-12 w-auto drop-shadow-lg" />
+            <img src={logo} alt="ERYCK_STYLE" className="h-12 w-auto drop-shadow-lg" />
           </Link>
 
           {/* Desktop Navigation */}

@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import productsHero from "@/assets/products-hero.jpg";
 
+// Lista de productos de ejemplo. Actualiza/desactiva según inventario real.
 const products = [
   {
     name: "Champú Hidratante Premium",

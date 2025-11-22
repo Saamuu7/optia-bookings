@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Scissors, Palette, Sparkles, Wind, User, Droplets } from "lucide-react";
 import { Link } from "react-router-dom";
 
+// Lista de servicios ofrecidos. Personaliza títulos y descripciones según la oferta real.
 const services = [
   {
     icon: Scissors,
