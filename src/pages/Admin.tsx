@@ -102,8 +102,8 @@ const Admin = () => {
       .channel('bookings-admin')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, (payload) => {
         try {
-          const rec = (payload.new ?? payload.record) as any;
-          const oldRec = (payload.old) as any;
+          const rec = payload.new as any;
+          const oldRec = payload.old as any;
           const affectedDate = rec?.fecha ?? oldRec?.fecha;
           if (!affectedDate) return;
           if (affectedDate >= monthStart && affectedDate <= monthEnd) {
@@ -141,7 +141,24 @@ const Admin = () => {
     setBookings([]);
   };
 
-  // Modify/delete functionality removed by user request
+  const handleDelete = async (bookingId: string) => {
+    if (!confirm('¿Estás seguro de que quieres eliminar esta cita?')) return;
+    
+    const { error } = await supabase
+      .from('bookings')
+      .delete()
+      .eq('id', bookingId);
+
+    if (error) {
+      console.error('Error deleting booking:', error);
+      alert('Error al eliminar la cita');
+      return;
+    }
+
+    // Refresh bookings
+    await fetchBookingsForDate(selectedDate);
+    await fetchBookingsForMonth(viewMonth);
+  };
 
   return (
     <main className="min-h-screen bg-background py-16">
@@ -329,13 +346,7 @@ const Admin = () => {
                             <div className="mt-4 flex justify-end gap-3">
                               <Button
                                 type="button"
-                                className="bg-yellow-500 text-white hover:bg-yellow-600 focus-visible:ring-yellow-500"
-                                size="sm"
-                              >
-                                Modificar
-                              </Button>
-                              <Button
-                                type="button"
+                                onClick={() => handleDelete(b.id)}
                                 className="bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-600"
                                 size="sm"
                               >
