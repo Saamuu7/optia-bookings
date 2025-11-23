@@ -10,6 +10,9 @@ import { es } from "date-fns/locale";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SERVICES } from "@/lib/services";
 
 interface Booking {
   id: string;
@@ -34,6 +37,10 @@ const Admin = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
+  const [editFecha, setEditFecha] = useState('');
+  const [editHora, setEditHora] = useState('');
+  const [editServicio, setEditServicio] = useState('');
 
   const fetchBookingsForDate = async (date: Date) => {
     setLoading(true);
@@ -158,6 +165,48 @@ const Admin = () => {
     // Refresh bookings
     await fetchBookingsForDate(selectedDate);
     await fetchBookingsForMonth(viewMonth);
+  };
+
+  const openEditDialog = (booking: Booking) => {
+    setEditingBooking(booking);
+    setEditFecha(booking.fecha);
+    setEditHora(booking.hora);
+    setEditServicio(booking.servicio);
+  };
+
+  const handleModify = async () => {
+    if (!editingBooking) return;
+
+    const { error } = await supabase
+      .from('bookings')
+      .update({
+        fecha: editFecha,
+        hora: editHora,
+        servicio: editServicio,
+      })
+      .eq('id', editingBooking.id);
+
+    if (error) {
+      console.error('Error updating booking:', error);
+      alert('Error al modificar la cita');
+      return;
+    }
+
+    // Close dialog and refresh
+    setEditingBooking(null);
+    await fetchBookingsForDate(selectedDate);
+    await fetchBookingsForMonth(viewMonth);
+  };
+
+  const generateTimeSlots = () => {
+    const slots = [];
+    for (let hour = 9; hour <= 20; hour++) {
+      for (let minute = 0; minute < 60; minute += 30) {
+        const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        slots.push(time);
+      }
+    }
+    return slots;
   };
 
   return (
@@ -346,6 +395,14 @@ const Admin = () => {
                             <div className="mt-4 flex justify-end gap-3">
                               <Button
                                 type="button"
+                                onClick={() => openEditDialog(b)}
+                                className="bg-yellow-500 text-white hover:bg-yellow-600 focus-visible:ring-yellow-500"
+                                size="sm"
+                              >
+                                Modificar
+                              </Button>
+                              <Button
+                                type="button"
                                 onClick={() => handleDelete(b.id)}
                                 className="bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-600"
                                 size="sm"
@@ -364,6 +421,72 @@ const Admin = () => {
           )}
         </div>
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingBooking} onOpenChange={(open) => !open && setEditingBooking(null)}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Modificar Cita</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Cliente</Label>
+              <Input value={`${editingBooking?.nombre} ${editingBooking?.apellidos}`} disabled />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Fecha</Label>
+              <Input
+                type="date"
+                value={editFecha}
+                onChange={(e) => setEditFecha(e.target.value)}
+                min={format(new Date(), 'yyyy-MM-dd')}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Hora</Label>
+              <Select value={editHora} onValueChange={setEditHora}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona hora" />
+                </SelectTrigger>
+                <SelectContent>
+                  {generateTimeSlots().map((time) => (
+                    <SelectItem key={time} value={time}>
+                      {time}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Servicio</Label>
+              <Select value={editServicio} onValueChange={setEditServicio}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona servicio" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SERVICES.map((service) => (
+                    <SelectItem key={service.id} value={service.title}>
+                      {service.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4">
+              <Button variant="outline" onClick={() => setEditingBooking(null)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleModify} className="bg-primary text-primary-foreground">
+                Guardar Cambios
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 };
