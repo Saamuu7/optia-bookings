@@ -3,12 +3,13 @@
 // esta ruta con autenticación server-side o mediante funciones protegidas.
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clock, User, Phone, Scissors } from "lucide-react";
-import { format } from "date-fns";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar as CalendarIcon, Clock, Phone, Scissors, Eye, EyeOff } from "lucide-react";
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths, subMonths, isSameMonth, isSameDay } from 'date-fns';
 import { es } from "date-fns/locale";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 interface Booking {
   id: string;
@@ -20,23 +21,33 @@ interface Booking {
   hora: string;
 }
 
+const ADMIN_USER = import.meta.env.VITE_ADMIN_USER ?? 'admin';
+const ADMIN_PASS = import.meta.env.VITE_ADMIN_PASS ?? 'Eryck_style1234';
+
 const Admin = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [viewMonth, setViewMonth] = useState<Date>(startOfMonth(new Date()));
+  const [bookingsByDate, setBookingsByDate] = useState<Record<string, Booking[]>>({});
+  const [authenticated, setAuthenticated] = useState<boolean>(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
-  useEffect(() => {
-    fetchBookings();
-  }, []);
-
-  const fetchBookings = async () => {
+  const fetchBookingsForDate = async (date: Date) => {
+    setLoading(true);
+    const formattedDate = format(date, 'yyyy-MM-dd');
     const { data, error } = await supabase
-      .from("bookings")
-      .select("*")
-      .order("fecha", { ascending: true })
-      .order("hora", { ascending: true });
+      .from('bookings')
+      .select('*')
+      .eq('fecha', formattedDate)
+      .order('hora', { ascending: true });
 
     if (error) {
-      console.error("Error fetching bookings:", error);
+      console.error('Error fetching bookings:', error);
+      setBookings([]);
+      setLoading(false);
       return;
     }
 
@@ -44,110 +55,305 @@ const Admin = () => {
     setLoading(false);
   };
 
-  const groupBookingsByDate = () => {
-    const grouped: { [key: string]: Booking[] } = {};
-    bookings.forEach((booking) => {
-      if (!grouped[booking.fecha]) {
-        grouped[booking.fecha] = [];
-      }
-      grouped[booking.fecha].push(booking);
+  const fetchBookingsForMonth = async (monthStart: Date) => {
+    setLoading(true);
+    const start = format(startOfMonth(monthStart), 'yyyy-MM-dd');
+    const end = format(endOfMonth(monthStart), 'yyyy-MM-dd');
+    const { data, error } = await supabase
+      .from('bookings')
+      .select('*')
+      .gte('fecha', start)
+      .lte('fecha', end)
+      .order('fecha', { ascending: true })
+      .order('hora', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching monthly bookings:', error);
+      setBookingsByDate({});
+      setLoading(false);
+      return;
+    }
+
+    const grouped: Record<string, Booking[]> = {};
+    (data || []).forEach((b: any) => {
+      const key = b.fecha as string;
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(b as Booking);
     });
-    return grouped;
+
+    setBookingsByDate(grouped);
+    setLoading(false);
   };
 
-  const groupedBookings = groupBookingsByDate();
+  useEffect(() => {
+    if (authenticated) {
+      fetchBookingsForDate(selectedDate);
+      fetchBookingsForMonth(viewMonth);
+    }
+  }, [selectedDate, authenticated, viewMonth]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <div className="pt-32 pb-20 flex items-center justify-center">
-          <p className="text-muted-foreground">Cargando agenda...</p>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
+  // Realtime subscription: refresh bookings when table changes for the selected date or month
+  useEffect(() => {
+    if (!authenticated) return;
+    const monthStart = format(startOfMonth(viewMonth), 'yyyy-MM-dd');
+    const monthEnd = format(endOfMonth(viewMonth), 'yyyy-MM-dd');
+
+    const channel = supabase
+      .channel('bookings-admin')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, (payload) => {
+        try {
+          const rec = (payload.new ?? payload.record) as any;
+          const oldRec = (payload.old) as any;
+          const affectedDate = rec?.fecha ?? oldRec?.fecha;
+          if (!affectedDate) return;
+          if (affectedDate >= monthStart && affectedDate <= monthEnd) {
+            // refetch month and selected date if affected
+            fetchBookingsForMonth(viewMonth);
+            if (affectedDate === format(selectedDate, 'yyyy-MM-dd')) {
+              fetchBookingsForDate(selectedDate);
+            }
+          }
+        } catch (err) {
+          console.error('Realtime handler error', err);
+        }
+      })
+      .subscribe();
+
+    return () => {
+      try { supabase.removeChannel(channel); } catch (e) { /* ignore */ }
+    };
+  }, [authenticated, viewMonth, selectedDate]);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (username === ADMIN_USER && password === ADMIN_PASS) {
+      setAuthenticated(true);
+      fetchBookingsForDate(selectedDate);
+    } else {
+      alert('Credenciales incorrectas');
+    }
+  };
+
+  const handleLogout = () => {
+    setAuthenticated(false);
+    setUsername('');
+    setPassword('');
+    setBookings([]);
+  };
+
+  // Modify/delete functionality removed by user request
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="pt-32 pb-20">
-        <div className="container mx-auto px-4">
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-12">
-              <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-                Agenda de Citas
-              </h1>
-              <p className="text-lg text-muted-foreground">
-                Todas las reservas organizadas por fecha
-              </p>
+    <main className="min-h-screen bg-background py-16">
+      <div className="container mx-auto px-4">
+        <div className="max-w-5xl mx-auto">
+          {authenticated ? (
+            <div className="text-center mb-8">
+              <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-2">Agenda</h1>
+              <p className="text-muted-foreground">Accede con tus credenciales para ver la agenda por día.</p>
             </div>
+          ) : null}
 
-            {Object.keys(groupedBookings).length === 0 ? (
-              <Card>
-                <CardContent className="pt-6">
-                  <p className="text-center text-muted-foreground">
-                    No hay citas reservadas aún
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-8">
-                {Object.entries(groupedBookings).map(([date, dayBookings]) => (
-                  <div key={date}>
-                    <div className="flex items-center gap-3 mb-4">
-                      <Calendar className="h-6 w-6 text-primary" />
-                      <h2 className="text-2xl font-bold text-foreground">
-                        {format(new Date(date + "T00:00:00"), "EEEE, d 'de' MMMM 'de' yyyy", {
-                          locale: es,
-                        })}
-                      </h2>
+          {!authenticated ? (
+            <div className="max-w-md mx-auto">
+              <div className="text-center mb-8">
+                <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-2">Agenda</h1>
+                <p className="text-muted-foreground">Accede con tus credenciales para ver la agenda por día.</p>
+              </div>
+              <div className="bg-card border border-border rounded-2xl shadow-lg p-8">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="rounded-full bg-primary/10 text-primary p-3">
+                    <CalendarIcon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-foreground">Acceso de la Agenda</h3>
+                    <p className="text-sm text-muted-foreground">Introduce tus credenciales para acceder.</p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div>
+                    <Label className="text-sm">Usuario</Label>
+                    <Input
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      placeholder="usuario"
+                      autoComplete="off"
+                      required
+                      className="mt-2"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-sm">Contraseña</Label>
+                    <div className="relative mt-2">
+                      <Input
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="contraseña"
+                        autoComplete="off"
+                        required
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                        onClick={() => setShowPassword((s) => !s)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
                     </div>
+                  </div>
 
-                    <div className="grid gap-4">
-                      {dayBookings.map((booking) => (
-                        <Card key={booking.id} className="border-l-4 border-l-primary">
+                  <div className="flex items-center justify-center mt-4">
+                    <Button type="submit" className="bg-primary text-primary-foreground px-6 py-2 rounded-lg shadow-sm">Entrar</Button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="md:col-span-1">
+                <div className="sticky top-28">
+                  <div className="flex items-center justify-between mb-3">
+                    <button onClick={() => setViewMonth(subMonths(viewMonth, 1))} className="px-2 py-1 rounded hover:bg-muted/30">‹</button>
+                    <div className="text-center">
+                      <div className="text-sm text-muted-foreground">{format(viewMonth, 'MMMM yyyy', { locale: es })}</div>
+                    </div>
+                    <button onClick={() => setViewMonth(addMonths(viewMonth, 1))} className="px-2 py-1 rounded hover:bg-muted/30">›</button>
+                  </div>
+
+                  <div className="grid grid-cols-7 gap-px bg-border rounded-lg overflow-hidden">
+                    {/* Weekday headers */}
+                    {['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'].map((d) => (
+                      <div key={d} className="bg-card text-center text-xs py-2 font-medium">{d}</div>
+                    ))}
+
+                    {/* Days */}
+                    {(() => {
+                      const start = startOfWeek(startOfMonth(viewMonth), { weekStartsOn: 1 });
+                      const end = endOfWeek(endOfMonth(viewMonth), { weekStartsOn: 1 });
+                      const today = new Date();
+                      const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                      const days: JSX.Element[] = [];
+                      for (let day = start; day <= end; day = addDays(day, 1)) {
+                        const key = format(day, 'yyyy-MM-dd');
+                        const dayBookings = bookingsByDate[key] || [];
+                        const isPast = day.getTime() < startOfToday.getTime();
+                        const isToday = isSameDay(day, today);
+                        const isSelected = isSameDay(day, selectedDate);
+
+                        days.push(
+                          <div
+                            key={key}
+                            onClick={() => { if (!isPast) setSelectedDate(day); }}
+                            className={`min-h-[90px] p-2 text-sm transition-all duration-200 ease-in-out ${isSameMonth(day, viewMonth) ? '' : 'opacity-50'} ${isPast ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-muted/20'} ${isSelected ? 'ring-2 ring-primary/40 bg-primary/5 rounded' : 'bg-background'}`}
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className={`${isSelected ? 'text-primary font-bold' : isToday ? 'text-red-600 font-bold' : isPast ? 'text-muted-foreground' : 'text-xs font-medium'}`}>{format(day, 'd')}</div>
+                            </div>
+                            <div className="mt-2 space-y-1">
+                              {dayBookings.slice(0,3).map((b) => (
+                                <div key={b.id} className="rounded px-1 py-0.5 bg-primary/10 text-primary text-xs truncate">
+                                  <span className="font-semibold">{b.hora}</span> {b.servicio}
+                                </div>
+                              ))}
+                              {dayBookings.length > 3 && (
+                                <div className="text-xs text-muted-foreground">+{dayBookings.length - 3} más</div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      }
+                      return days;
+                    })()}
+                  </div>
+
+                  <div className="mt-4">
+                    <button onClick={handleLogout} className="w-full rounded-md py-2 bg-red-600 text-white hover:bg-red-700">Cerrar sesión</button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="md:col-span-2">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-bold">Reservas del día</h2>
+                  <div className="text-sm text-muted-foreground">{format(selectedDate, "EEEE, d 'de' MMMM yyyy", { locale: es })}</div>
+                </div>
+
+                {loading ? (
+                  <p className="text-muted-foreground">Cargando...</p>
+                ) : bookings.length === 0 ? (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>No hay citas para este día</CardTitle>
+                    </CardHeader>
+                  </Card>
+                ) : (
+                  <div className="space-y-4">
+                    {bookings.map((b) => {
+                      // compute if the booking is in the past (finished)
+                      let finished = false;
+                      try {
+                        const [y, m, d] = (b.fecha || '').split('-').map((x: string) => parseInt(x, 10));
+                        const [hh, mm] = (b.hora || '').split(':').map((x: string) => parseInt(x, 10));
+                        if (!isNaN(y) && !isNaN(m) && !isNaN(d) && !isNaN(hh) && !isNaN(mm)) {
+                          const bookingDate = new Date(y, m - 1, d, hh, mm, 0);
+                          finished = bookingDate.getTime() < Date.now();
+                        }
+                      } catch (e) {
+                        // ignore parse errors
+                      }
+
+                      return (
+                        <Card key={b.id} className={`border-l-4 ${finished ? 'border-l-green-500' : 'border-l-primary'}`}>
                           <CardHeader>
                             <div className="flex items-center justify-between">
-                              <CardTitle className="text-xl">
-                                {booking.nombre} {booking.apellidos}
-                              </CardTitle>
-                              <div className="flex items-center gap-2 text-primary font-semibold">
-                                <Clock className="h-5 w-5" />
-                                {booking.hora}
-                              </div>
+                              <CardTitle className="text-lg font-semibold">{b.nombre} {b.apellidos}</CardTitle>
+                              <div className="text-primary font-semibold flex items-center gap-2"><Clock className="w-4 h-4" />{b.hora}</div>
                             </div>
                           </CardHeader>
                           <CardContent>
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2 text-muted-foreground">
-                                <Scissors className="h-4 w-4" />
-                                <span>{booking.servicio}</span>
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="text-sm text-muted-foreground">Servicio</div>
+                                <div className="font-medium">{b.servicio}</div>
                               </div>
-                              <div className="flex items-center gap-2 text-muted-foreground">
-                                <Phone className="h-4 w-4" />
-                                <a
-                                  href={`tel:${booking.telefono}`}
-                                  className="hover:text-primary transition-colors"
-                                >
-                                  {booking.telefono}
-                                </a>
+                              <div className="text-right">
+                                <div className="text-sm text-muted-foreground">Teléfono</div>
+                                <a href={`tel:${b.telefono}`} className="font-medium hover:text-primary">{b.telefono}</a>
                               </div>
+                            </div>
+                            <div className="mt-4 flex justify-end gap-3">
+                              <Button
+                                type="button"
+                                className="bg-yellow-500 text-white hover:bg-yellow-600 focus-visible:ring-yellow-500"
+                                size="sm"
+                              >
+                                Modificar
+                              </Button>
+                              <Button
+                                type="button"
+                                className="bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-600"
+                                size="sm"
+                              >
+                                Eliminar
+                              </Button>
                             </div>
                           </CardContent>
                         </Card>
-                      ))}
-                    </div>
+                      );
+                    })}
                   </div>
-                ))}
+                )}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
-      </main>
-      <Footer />
-    </div>
+      </div>
+    </main>
   );
 };
 

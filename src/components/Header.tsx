@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import logo from "@/assets/logo-optia.png";
@@ -8,6 +8,7 @@ const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,14 +26,20 @@ const Header = () => {
   ];
 
   const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    if (href.startsWith("#")) {
-      e.preventDefault();
+    if (!href.startsWith('#')) return;
+    e.preventDefault();
+    // If we're already on home, smooth scroll directly.
+    if (location.pathname === '/') {
       const element = document.querySelector(href);
       if (element) {
-        element.scrollIntoView({ behavior: "smooth" });
+        element.scrollIntoView({ behavior: 'smooth' });
       }
       setIsMobileMenuOpen(false);
+      return;
     }
+    // Navigate to home with hash; after mount Index will smooth scroll.
+    navigate('/' + href, { replace: false });
+    setIsMobileMenuOpen(false);
   };
 
   return (

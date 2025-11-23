@@ -3,7 +3,7 @@ import { SERVICES } from "@/lib/services";
 
 const Services = () => {
   return (
-    <section id="servicios" className="py-20 bg-muted/30">
+    <section id="servicios" className="py-20 bg-background">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">

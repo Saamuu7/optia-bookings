@@ -17,6 +17,7 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         premium: "bg-gradient-to-r from-primary to-secondary text-white hover:shadow-xl hover:scale-105 shadow-primary/50",
         glass: "bg-white/10 backdrop-blur-md border border-white/30 text-white hover:bg-white/20 shadow-xl",
+        reserve: "bg-primary text-primary-foreground hover:bg-primary/85 shadow-md hover:shadow-lg transition-colors",
       },
       size: {
         default: "h-10 px-4 py-2",

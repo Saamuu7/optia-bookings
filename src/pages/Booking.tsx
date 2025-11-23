@@ -2,7 +2,7 @@
 // - Usa Supabase cliente (ver `src/integrations/supabase/client.ts`) para leer/escribir reservas.
 // - Variables necesarias (cliente) en `.env`: `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`.
 // - No expongas claves privadas en `VITE_`.
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -37,7 +37,7 @@ const Booking = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const generateTimeSlots = (date: Date) => {
+  const generateTimeSlots = useCallback((date: Date) => {
     const dayOfWeek = date.getDay();
     const isSaturday = dayOfWeek === 6;
     const hours = isSaturday ? WORKING_HOURS.saturday : WORKING_HOURS.weekday;
@@ -50,13 +50,32 @@ const Booking = () => {
       }
     }
     return slots;
-  };
+  }, []);
+
+  // Fetch booked times (must be declared before useEffect hooks that reference it)
+  const fetchBookedTimes = useCallback(async (date: Date) => {
+    const formattedDate = format(date, "yyyy-MM-dd");
+    const { data, error } = await supabase
+      .from("bookings")
+      .select("hora")
+      .eq("fecha", formattedDate);
+
+    if (error) {
+      console.error("Error fetching bookings:", error);
+      return;
+    }
+
+    const booked = data.map((booking) => booking.hora);
+    setBookedTimes(booked);
+    const allSlots = generateTimeSlots(date);
+    setAvailableTimes(allSlots.filter((slot) => !booked.includes(slot)));
+  }, [generateTimeSlots]);
 
   useEffect(() => {
     if (selectedDate) {
       fetchBookedTimes(selectedDate);
     }
-  }, [selectedDate]);
+  }, [selectedDate, fetchBookedTimes]);
 
   // Realtime subscription to update available times when bookings change
   useEffect(() => {
@@ -81,25 +100,8 @@ const Booking = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [selectedDate]);
+  }, [selectedDate, fetchBookedTimes]);
 
-  const fetchBookedTimes = async (date: Date) => {
-    const formattedDate = format(date, "yyyy-MM-dd");
-    const { data, error } = await supabase
-      .from("bookings")
-      .select("hora")
-      .eq("fecha", formattedDate);
-
-    if (error) {
-      console.error("Error fetching bookings:", error);
-      return;
-    }
-
-    const booked = data.map((booking) => booking.hora);
-    setBookedTimes(booked);
-    const allSlots = generateTimeSlots(date);
-    setAvailableTimes(allSlots.filter((slot) => !booked.includes(slot)));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,14 +157,14 @@ const Booking = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+    <div className="min-h-screen bg-background">
       <Header />
       <main className="pt-32 pb-20">
         <div className="container mx-auto px-4">
           <Button
             variant="ghost"
             onClick={() => navigate("/")}
-            className="mb-6 hover-scale group"
+            className="mb-6 hover-scale group hover:bg-primary/10 hover:text-primary-foreground"
           >
             <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
             Volver al inicio
@@ -170,7 +172,7 @@ const Booking = () => {
 
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12 animate-fade-in">
-              <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">
+              <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 bg-gradient-to-r from-primary via-primary to-primary bg-clip-text text-transparent">
                 Reservar Cita
               </h1>
               <p className="text-lg text-muted-foreground">
@@ -178,91 +180,88 @@ const Booking = () => {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8">
-              {/* Calendar */}
-              <Card className="border-primary/20 shadow-lg hover:shadow-xl transition-shadow duration-300 animate-fade-in">
-                <CardHeader className="bg-gradient-to-br from-primary/5 to-transparent">
-                  <CardTitle className="flex items-center gap-2 text-primary">
-                    <CalendarIcon className="h-5 w-5" />
-                    Selecciona una fecha
-                  </CardTitle>
-                  <CardDescription>
-                    Cerrado los domingos. Sábados hasta las 15:00
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="flex justify-center pt-6">
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={setSelectedDate}
-                    disabled={isDateDisabled}
-                    locale={es}
-                    className="rounded-md border pointer-events-auto"
-                    classNames={{
-                      day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-primary hover:text-primary-foreground transition-colors",
-                      day_today: "bg-primary/20 text-primary font-bold",
-                      day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
-                    }}
-                  />
-                </CardContent>
-              </Card>
+            <div className="space-y-8">
+              <div className="grid md:grid-cols-2 gap-8">
+                {/* Calendar */}
+                <Card className="border-primary/20 shadow-lg hover:shadow-xl transition-shadow duration-300 animate-fade-in">
+                  <CardHeader className="bg-gradient-to-br from-primary/5 to-transparent">
+                    <CardTitle className="flex items-center gap-2 text-primary">
+                      <CalendarIcon className="h-5 w-5" />
+                      Selecciona una fecha
+                    </CardTitle>
+                    <CardDescription>
+                      Cerrado los domingos. Sábados hasta las 15:00
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex justify-center pt-6">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={setSelectedDate}
+                      disabled={isDateDisabled}
+                      locale={es}
+                      className="rounded-md border pointer-events-auto"
+                      classNames={{
+                        day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-primary hover:text-primary-foreground transition-colors",
+                        day_today: "bg-primary/20 text-primary font-bold",
+                        day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
+                      }}
+                    />
+                  </CardContent>
+                </Card>
 
-              {/* Time Selection & Form */}
-              <div className="space-y-6">
-                {selectedDate && (
-                  <Card className="border-primary/20 shadow-lg hover:shadow-xl transition-all duration-300 animate-scale-in">
-                    <CardHeader className="bg-gradient-to-br from-accent/5 to-transparent">
-                      <CardTitle className="flex items-center gap-2 text-accent">
-                        <Clock className="h-5 w-5" />
-                        Horas disponibles
-                      </CardTitle>
-                      <CardDescription className="font-medium">
-                        {format(selectedDate, "EEEE, d 'de' MMMM", { locale: es })}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-6">
-                      <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
-                        {availableTimes.map((time) => {
+                {/* Hours */}
+                <Card className="border-primary/20 shadow-lg hover:shadow-xl transition-all duration-300 animate-scale-in">
+                  <CardHeader className="bg-gradient-to-br from-primary/5 to-transparent">
+                    <CardTitle className="flex items-center gap-2 text-primary">
+                      <Clock className="h-5 w-5" />
+                      Horas disponibles
+                    </CardTitle>
+                    <CardDescription className="font-medium">
+                      {selectedDate ? format(selectedDate, "EEEE, d 'de' MMMM", { locale: es }) : ''}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    <div className="grid grid-cols-3 gap-2 max-h-72 overflow-y-auto pr-2 custom-scrollbar">
+                      {availableTimes.length > 0 ? (
+                        availableTimes.map((time) => {
                           const isSelected = selectedTime === time;
                           return (
                             <Button
                               key={time}
                               type="button"
-                              variant={isSelected ? "default" : "outline"}
+                              variant={isSelected ? "premium" : "outline"}
                               onClick={() => setSelectedTime(time)}
                               className={`w-full transition-all duration-200 hover-scale ${
-                                isSelected 
-                                  ? 'bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-md' 
-                                  : 'hover:bg-primary/10 hover:border-primary'
+                                isSelected ? "" : "hover:bg-primary/10 hover:text-primary-foreground"
                               }`}
                             >
                               {time}
                             </Button>
                           );
-                        })}
-                        {availableTimes.length === 0 && (
-                          <p className="col-span-3 text-center text-muted-foreground py-8">
-                            No hay horas disponibles para este día
-                          </p>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
+                        })
+                      ) : (
+                        <p className="col-span-3 text-center text-muted-foreground py-8">No hay horas disponibles para este día</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
 
-                {selectedDate && selectedTime && (
-                  <Card className="border-primary/20 shadow-lg hover:shadow-xl transition-all duration-300 animate-scale-in">
-                    <CardHeader className="bg-gradient-to-br from-primary/5 via-accent/5 to-transparent">
-                      <CardTitle className="text-primary">Tus datos</CardTitle>
-                      <CardDescription>
-                        Completa tus datos para confirmar la reserva
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-6">
+              {/* Full-width form below */}
+              <div>
+                <Card className="border-primary/20 shadow-lg hover:shadow-xl transition-all duration-300 animate-scale-in">
+                  <CardHeader className="bg-gradient-to-br from-primary/5 via-primary/5 to-transparent">
+                    <CardTitle className="text-primary">Tus datos</CardTitle>
+                    <CardDescription>
+                      Completa tus datos para confirmar la reserva
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    {selectedDate && selectedTime ? (
                       <form onSubmit={handleSubmit} className="space-y-4">
-                        {/* Summary: selected date/time */}
                         <div className="animate-fade-in">
-                          <Card className="border-primary/30 bg-gradient-to-br from-primary/10 via-accent/5 to-transparent">
+                          <Card className="border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
                             <CardContent className="pt-4">
                               <div className="flex items-center justify-between">
                                 <div>
@@ -278,7 +277,6 @@ const Booking = () => {
                           </Card>
                         </div>
 
-                        {/* Service selector and summary */}
                         <div>
                           <Label htmlFor="servicio">Servicio</Label>
                           <Select
@@ -293,34 +291,36 @@ const Booking = () => {
                             </SelectTrigger>
                             <SelectContent>
                                 {SERVICES.map((s) => (
-                                  <SelectItem key={s.id} value={s.title}>
+                                  <SelectItem
+                                    key={s.id}
+                                    value={s.title}
+                                    className="focus:bg-primary/15 focus:text-primary hover:bg-primary/10 hover:text-primary-foreground"
+                                  >
                                     {s.title}{s.price ? ` — ${s.price}` : ""}
                                   </SelectItem>
                                 ))}
                             </SelectContent>
                           </Select>
 
-                          {/* If a service is selected, show a compact summary */}
-                          {formData.servicio && (
-                            (() => {
-                              const svc = SERVICES.find((x) => x.title === formData.servicio);
-                              if (!svc) return null;
-                              return (
-                                <div className="mt-3 p-4 rounded-lg border border-primary/30 bg-gradient-to-br from-primary/5 to-accent/5 animate-fade-in">
-                                  <div className="flex items-start gap-4">
-                                    <div className="flex-1">
-                                      <p className="font-semibold text-primary">{svc.title}</p>
-                                      {svc.description && <p className="text-sm text-muted-foreground mt-1">{svc.description}</p>}
-                                    </div>
-                                    <div className="text-right">
-                                      {svc.duration && <p className="text-sm text-muted-foreground">{svc.duration}</p>}
-                                      {svc.price && <p className="font-semibold text-accent text-lg">{svc.price}</p>}
-                                    </div>
+                          {formData.servicio && (() => {
+                            const svc = SERVICES.find((x) => x.title === formData.servicio);
+                            if (!svc) return null;
+                            return (
+                              <div className="mt-3 p-4 rounded-lg border border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 animate-fade-in">
+                                <div className="flex items-start gap-4">
+                                  <div className="flex-1">
+                                    <p className="font-semibold text-primary">{svc.title}</p>
+                                    {svc.description && <p className="text-sm text-muted-foreground mt-1">{svc.description}</p>}
+                                  </div>
+                                  <div className="text-right">
+                                    {svc.duration && <p className="text-sm text-muted-foreground">{svc.duration}</p>}
+                                    {svc.price && <p className="font-semibold text-primary text-lg">{svc.price}</p>}
                                   </div>
                                 </div>
-                              );
-                            })()
-                          )}
+                              </div>
+                            );
+                          })()}
+
                         </div>
 
                         <div>
@@ -350,25 +350,21 @@ const Booking = () => {
 
                         <Button
                           type="submit"
-                          className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 hover-scale font-semibold text-lg py-6"
+                          variant="reserve"
+                          className="w-full font-semibold text-lg py-6"
                           disabled={isSubmitting}
                         >
                           {isSubmitting ? "Reservando..." : "Confirmar Reserva"}
                         </Button>
                       </form>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {!selectedDate && (
-                  <Card className="border-dashed border-primary/30 animate-fade-in">
-                    <CardContent className="pt-6">
-                      <p className="text-center text-muted-foreground py-8">
-                        👈 Selecciona una fecha para ver las horas disponibles
-                      </p>
-                    </CardContent>
-                  </Card>
-                )}
+                    ) : (
+                      <div className="py-8 text-center text-muted-foreground">
+                        <p className="mb-2">Selecciona una fecha y hora para rellenar tus datos</p>
+                        <p className="text-sm">El formulario aparecerá aquí y ocupará casi todo el ancho.</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </div>
